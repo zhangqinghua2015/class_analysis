@@ -1,12 +1,12 @@
 package com.zqh.analysis.enums;
 
 /**
- * @fileName: ConstantEnum
+ * @fileName: ConstantEnums
  * @author: qhzhang
  * @date: 2018/01/26 13:19
  * @discription:
  */
-public enum ConstantEnum {
+public enum ConstantEnums {
 
     UTF_8_info(1),
     Integer_info(3),
@@ -25,7 +25,7 @@ public enum ConstantEnum {
 
     private int tag;
 
-    private ConstantEnum(int tag) {
+    private ConstantEnums(int tag) {
         this.tag = tag;
     }
 
@@ -33,8 +33,8 @@ public enum ConstantEnum {
         return tag;
     }
 
-    public static ConstantEnum getConstantEnum(int tag) {
-        for(ConstantEnum constantEnum : ConstantEnum.values()) {
+    public static ConstantEnums getConstantEnum(int tag) {
+        for(ConstantEnums constantEnum : ConstantEnums.values()) {
             if (constantEnum.tag == tag) {
                 return constantEnum;
             }

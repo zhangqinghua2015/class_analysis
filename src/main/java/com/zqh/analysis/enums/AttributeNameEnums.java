@@ -1,13 +1,13 @@
 package com.zqh.analysis.enums;
 
 /**
- * @fileName: AttributeName
+ * @fileName: AttributeNameEnums
  * @author: qhzhang
  * @date: 2018/01/26 15:37
  * @discription:
  */
 
-public enum AttributeName {
+public enum AttributeNameEnums {
     Code,
     ConstantValue,
     Deprecated,
@@ -29,10 +29,10 @@ public enum AttributeName {
     AnnotationDefault,
     BootstrapMethods;
 
-    public static AttributeName getByNamge(String name) {
-        for (AttributeName attributeName : AttributeName.values()) {
-            if (attributeName.name().equals(name)) {
-                return attributeName;
+    public static AttributeNameEnums getByNamge(String name) {
+        for (AttributeNameEnums attributeNameEnums : AttributeNameEnums.values()) {
+            if (attributeNameEnums.name().equals(name)) {
+                return attributeNameEnums;
             }
         }
         return null;

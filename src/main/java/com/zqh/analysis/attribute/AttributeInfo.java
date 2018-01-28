@@ -13,18 +13,17 @@ import static com.zqh.analysis.utils.NumberUtil.bytesToInt;
  */
 public class AttributeInfo extends Info {
 
-    private String name;
+    protected String name;
     protected byte[] attribute_name_index; // = new byte[2];
     protected byte[] attribute_length = new byte[4];
     protected byte[] info; // byte[attribute_length]
 
     @Override
     public String toString() {
-        return "AttributeInfo{" +
-                "\n                            name=" + name +
+        return name + "{" +
                 ", \n                            attribute_name_index=" + bytesToInt(attribute_name_index) + " // " + bytesToHexString(attribute_name_index) +
                 ", \n                            attribute_length=" + bytesToInt(attribute_length) + " // " + bytesToHexString(attribute_length) +
-//                ", \n                            info=" + Arrays.toString(info) +
+                ", \n                            info=" + new String(info) + " // " + bytesToHexString(info) +
                 "\n                       }";
     }
 
