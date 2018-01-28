@@ -276,10 +276,7 @@ public class Main {
         fis.read(runtimeVisibleAnnotations.getNum_annotations());
         int numAnnotations = bytesToInt(runtimeVisibleAnnotations.getNum_annotations());
         if (0<numAnnotations) {
-            AnnotationInfo[] annotationInfos = new AnnotationInfo[numAnnotations];
-            for(int i=0; i<numAnnotations; i++) {
-                annotationInfos[i] = getAnnotationInfo(fis);
-            }
+            runtimeVisibleAnnotations.setAnnotation_infos(getAnnotationInfos(fis, numAnnotations));
         }
     }
 
@@ -313,13 +310,17 @@ public class Main {
         fis.read(parameterAnnotationInfo.getNum_annotations());
         int numAnnotations = bytesToInt(parameterAnnotationInfo.getNum_annotations());
         if (0<numAnnotations) {
-            AnnotationInfo[] annotationInfos = new AnnotationInfo[numAnnotations];
-            for(int h=0; h<numAnnotations; h++) {
-                annotationInfos[h] = getAnnotationInfo(fis);
-            }
-            parameterAnnotationInfo.setAnnotation_infos(annotationInfos);
+            parameterAnnotationInfo.setAnnotation_infos(getAnnotationInfos(fis, numAnnotations));
         }
         return parameterAnnotationInfo;
+    }
+
+    private static AnnotationInfo[] getAnnotationInfos(FileInputStream fis, int numAnnotations) throws IOException {
+        AnnotationInfo[] annotationInfos = new AnnotationInfo[numAnnotations];
+        for(int h=0; h<numAnnotations; h++) {
+            annotationInfos[h] = getAnnotationInfo(fis);
+        }
+        return annotationInfos;
     }
 
     private static AnnotationInfo getAnnotationInfo(FileInputStream fis) throws IOException {
@@ -337,7 +338,7 @@ public class Main {
                 elementValuePair.setElement_value(getElementValue(fis));
                 elementValuePairs[j] = elementValuePair;
             }
-
+            annotationInfo.setElement_value_pairs(elementValuePairs);
         }
         return annotationInfo;
     }
