@@ -191,9 +191,10 @@ public class Main {
                     case LocalVariableTable:
                         attributeInfo = getLocalVariableTable(fis, attribute_name_index);
                         break;
-                    /*case StackMapTable:
-                        attributeInfo = getStackMapTable(fis, attribute_name_index);
-                        break;*/
+                    case StackMapTable:
+                        // TODO StackMapTable解析
+                        attributeInfo = getAttributeInfo(fis, attribute_name_index, "StackMapTable");
+                        break;
                     case Signature:
                         attributeInfo = getSignature(fis, attribute_name_index);
                         break;
@@ -221,6 +222,14 @@ public class Main {
                             attributeInfo = new RuntimeVisibleParameterAnnotations(true);
                         }
                         getRuntimeVisibleParameterAnnotations(fis, (RuntimeVisibleParameterAnnotations) attributeInfo, attribute_name_index);
+                        break;
+                    case RuntimeVisibleTypeAnnotations:
+                        // TODO RuntimeVisibleTypeAnnotations
+                        attributeInfo = getAttributeInfo(fis, attribute_name_index, "RuntimeVisibleTypeAnnotations");
+                        break;
+                    case RuntimeInvisibleTypeAnnotations:
+                        // TODO RuntimeInvisibleTypeAnnotations
+                        attributeInfo = getAttributeInfo(fis, attribute_name_index, "RuntimeInvisibleTypeAnnotations");
                         break;
                     case AnnotationDefault:
                         attributeInfo = getAnnotationsDefault(fis, attribute_name_index);
@@ -468,11 +477,13 @@ public class Main {
 
     private static AttributeInfo getAttributeInfo(FileInputStream fis, byte[] attribute_name_index, String name) throws IOException {
         AttributeInfo attributeInfo = new AttributeInfo();
+        attributeInfo.setName(name);
         attributeInfo.setAttribute_name_index(attribute_name_index);
         fis.read(attributeInfo.getAttribute_length());
         if (!attributeLengthCheck(attributeInfo)) {
             return attributeInfo;
         }
+        attributeInfo.setInfo(new byte[bytesToInt(attributeInfo.getAttribute_length())]);
         fis.read(attributeInfo.getInfo());
         return attributeInfo;
     }

@@ -26,6 +26,8 @@ public enum AttributeNameEnums {
     RuntimeInvisibleAnnotations,
     RuntimeVisibleParameterAnnotations,
     RuntimeInvisibleParameterAnnotations,
+    RuntimeVisibleTypeAnnotations,
+    RuntimeInvisibleTypeAnnotations,
     AnnotationDefault,
     BootstrapMethods;
 
