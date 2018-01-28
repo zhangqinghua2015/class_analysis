@@ -259,10 +259,10 @@ public class Main {
         int numParameters = bytesToInt(runtimeVisibleParameterAnnotations.getNum_parameters());
         if (0<numParameters) {
             ParameterAnnotationInfo[] parameterAnnotationInfos = new ParameterAnnotationInfo[numParameters];
+            runtimeVisibleParameterAnnotations.setParameterAnnotationInfos(parameterAnnotationInfos);
             for(int i=0; i<numParameters; i++) {
                 parameterAnnotationInfos[i] = getParameterAnnotationInfo(fis);
             }
-            runtimeVisibleParameterAnnotations.setParameterAnnotationInfos(parameterAnnotationInfos);
         }
     }
 
@@ -332,13 +332,13 @@ public class Main {
         if (0<numElementValuePairs) {
             ElementValuePair elementValuePair;
             ElementValuePair[] elementValuePairs = new ElementValuePair[numElementValuePairs];
+            annotationInfo.setElement_value_pairs(elementValuePairs);
             for(int j=0; j<numElementValuePairs; j++) {
                 elementValuePair = new ElementValuePair();
                 fis.read(elementValuePair.getElement_name_index());
                 elementValuePair.setElement_value(getElementValue(fis));
                 elementValuePairs[j] = elementValuePair;
             }
-            annotationInfo.setElement_value_pairs(elementValuePairs);
         }
         return annotationInfo;
     }
@@ -385,9 +385,9 @@ public class Main {
                 if (0<numValues) {
                     ElementValue[] elementValues = new ElementValue[numValues];
                     for(int i=0; i<numValues; i++) {
+                        arrayElementValue.setValues(elementValues);
                         elementValues[i] = getElementValue(fis);
                     }
-                    arrayElementValue.setValues(elementValues);
                 }
                 elementValue = arrayElementValue;
                 break;
@@ -411,6 +411,7 @@ public class Main {
         if (0<getLocalVariableTypeTableLength) {
             LocalVariableTypeInfo localVariableTypeInfo;
             LocalVariableTypeInfo[] localVariableTypeInfos = new LocalVariableTypeInfo[getLocalVariableTypeTableLength];
+            localVariableTypeTable.setLocal_variable_type_infos(localVariableTypeInfos);
             for(int i=0; i<getLocalVariableTypeTableLength; i++) {
                 localVariableTypeInfo = new LocalVariableTypeInfo();
                 localVariableTypeInfos[i] = localVariableTypeInfo;
@@ -501,6 +502,7 @@ public class Main {
         if (0<numberOfExceptions) {
             ExceptionIndexTable exceptionIndexTable;
             ExceptionIndexTable[] exceptionIndexTables = new ExceptionIndexTable[numberOfExceptions];
+            exceptions.setExceptions_index_table(exceptionIndexTables);
             for(int i=0; i<numberOfExceptions; i++) {
                 exceptionIndexTable = new ExceptionIndexTable();
                 exceptionIndexTables[i] = exceptionIndexTable;
@@ -593,6 +595,7 @@ public class Main {
         if (0<numberOfClasses) {
             InnerClassesInfo innerClassesInfo;
             InnerClassesInfo[] innerClassesInfos = new InnerClassesInfo[numberOfClasses];
+            innerClasses.setInner_classes(innerClassesInfos);
             for(int i=0; i<numberOfClasses; i++) {
                 innerClassesInfo = new InnerClassesInfo();
                 innerClassesInfos[i] = innerClassesInfo;
