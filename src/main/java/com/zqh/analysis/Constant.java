@@ -3,9 +3,7 @@ package com.zqh.analysis;
 import com.zqh.analysis.enums.ConstantEnum;
 
 import static com.zqh.analysis.enums.ConstantEnum.getConstantEnum;
-import static com.zqh.analysis.utils.NumberUtil.bytesToHexString;
-import static com.zqh.analysis.utils.NumberUtil.bytesToInt;
-import static com.zqh.analysis.utils.NumberUtil.bytesToLong;
+import static com.zqh.analysis.utils.NumberUtil.*;
 
 /**
  * @fileName: Constant
@@ -35,13 +33,13 @@ public class Constant {
                 sb.append(", \n             bytes=").append(bytesToInt(bytes)).append(" // ").append(bytesToHexString(bytes));
                 break;
             case Float_info:
-                sb.append(", \n             bytes=").append(new String(bytes)).append(" // ").append(bytesToHexString(bytes));
+                sb.append(", \n             bytes=").append(bytesToFloat(bytes)).append(" // ").append(bytesToHexString(bytes));
                 break;
             case Long_info:
                 sb.append(", \n             bytes=").append(bytesToLong(bytes)).append(" // ").append(bytesToHexString(bytes));
                 break;
             case Double_info:
-                sb.append(", \n             bytes=").append(new String(bytes)).append(" // ").append(bytesToHexString(bytes));
+                sb.append(", \n             bytes=").append(bytesToDouble(bytes)).append(" // ").append(bytesToHexString(bytes));
                 break;
             case Class_info:
             case String_info:

@@ -39,4 +39,11 @@ public class NumberUtil {
         return tmp;
     }
 
+    public static float bytesToFloat(byte[] bytes) {
+       return Float.intBitsToFloat(bytesToInt(bytes));
+    }
+
+    public static double bytesToDouble(byte[] bytes) {
+        return Double.longBitsToDouble(bytesToLong(bytes));
+    }
 }
