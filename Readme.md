@@ -1,2 +1,2 @@
 # 直接运行Main
-main方法参数中指定class文件路径即可，除了RuntimeVisibleTypeAnnotation/RuntimeInvisibleTypeAnnotation解析没测过之外，其他的应该没什么问题
+main方法参数中指定class文件路径即可，有double常量的时候解析还有点问题，除了RuntimeVisibleTypeAnnotation/RuntimeInvisibleTypeAnnotation解析没测过之外，其他的应该没什么问题
