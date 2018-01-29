@@ -132,6 +132,7 @@ public class Main {
                     case Double_info:
                         constant.setBytes(new byte[8]);
                         fis.read(constant.getBytes());
+                        constants[i++] = constant;
                         break;
                     case Class_info:
                     case String_info:
