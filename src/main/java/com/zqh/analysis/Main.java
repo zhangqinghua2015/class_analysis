@@ -2,14 +2,21 @@ package com.zqh.analysis;
 
 import com.zqh.analysis.attribute.*;
 import com.zqh.analysis.attribute.element.*;
-import com.zqh.analysis.enums.AttributeNameEnums;
+import com.zqh.analysis.attribute.target.targetinfo.*;
+import com.zqh.analysis.attribute.target.typepath.Path;
+import com.zqh.analysis.attribute.target.typepath.TypePath;
+import com.zqh.analysis.attribute.verification.VerificationTypeInfo;
+import com.zqh.analysis.enums.AttributeNameEnum;
+import com.zqh.analysis.enums.StackMapFrameEnum;
+import com.zqh.analysis.enums.TargetTypeEnum;
+import com.zqh.analysis.enums.VerificationTypeEnum;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import static com.zqh.analysis.enums.ConstantEnums.getConstantEnum;
+import static com.zqh.analysis.enums.ConstantEnum.getConstantEnum;
 import static com.zqh.analysis.utils.NumberUtil.bytesToInt;
 
 /**
@@ -111,8 +118,10 @@ public class Main {
                         int length = bytesToInt(constant.getLength());
                         if (length > 0) {
                             constant.setBytes(new byte[length]);
+                            fis.read(constant.getBytes());
+                        } else {
+                            constant.setBytes("".getBytes());
                         }
-                        fis.read(constant.getBytes());
                         break;
                     case Integer_info:
                     case Float_info:
@@ -163,7 +172,7 @@ public class Main {
 
                 int nameIndex = bytesToInt(attribute_name_index);
                 String name = classInfo.getAttributeNameByIndex(nameIndex);
-                switch(AttributeNameEnums.getByNamge(name)) {
+                switch(AttributeNameEnum.getByNamge(name)) {
                     case Code:
                         attributeInfo = getCode(fis, classInfo, attribute_name_index);
                         break;
@@ -192,8 +201,7 @@ public class Main {
                         attributeInfo = getLocalVariableTable(fis, attribute_name_index);
                         break;
                     case StackMapTable:
-                        // TODO StackMapTable解析
-                        attributeInfo = getAttributeInfo(fis, attribute_name_index, "StackMapTable");
+                        attributeInfo = getStackMapTable(fis, attribute_name_index);
                         break;
                     case Signature:
                         attributeInfo = getSignature(fis, attribute_name_index);
@@ -219,17 +227,18 @@ public class Main {
                         attributeInfo = new RuntimeVisibleParameterAnnotations(true);
                     case RuntimeInvisibleParameterAnnotations:
                         if (null == attributeInfo) {
-                            attributeInfo = new RuntimeVisibleParameterAnnotations(true);
+                            attributeInfo = new RuntimeVisibleParameterAnnotations(false);
                         }
                         getRuntimeVisibleParameterAnnotations(fis, (RuntimeVisibleParameterAnnotations) attributeInfo, attribute_name_index);
                         break;
                     case RuntimeVisibleTypeAnnotations:
-                        // TODO RuntimeVisibleTypeAnnotations
-                        attributeInfo = getAttributeInfo(fis, attribute_name_index, "RuntimeVisibleTypeAnnotations");
+                        attributeInfo = new RuntimeVisibleTypeAnnotations(true);
                         break;
                     case RuntimeInvisibleTypeAnnotations:
-                        // TODO RuntimeInvisibleTypeAnnotations
-                        attributeInfo = getAttributeInfo(fis, attribute_name_index, "RuntimeInvisibleTypeAnnotations");
+                        if (null == attributeInfo) {
+                            attributeInfo = new RuntimeVisibleTypeAnnotations(false);
+                        }
+                        getRuntimeVisibleTypeAnnotations(fis, (RuntimeVisibleTypeAnnotations) attributeInfo, attribute_name_index);
                         break;
                     case AnnotationDefault:
                         attributeInfo = getAnnotationsDefault(fis, attribute_name_index);
@@ -246,6 +255,97 @@ public class Main {
             }
             info.setAttributes(attributeInfos);
         }
+    }
+
+    private static StackMapTable getStackMapTable(FileInputStream fis, byte[] attribute_name_index) throws IOException {
+        StackMapTable stackMapTable = new StackMapTable();
+        stackMapTable.setAttribute_name_index(attribute_name_index);
+        fis.read(stackMapTable.getAttribute_length());
+        if (!attributeLengthCheck(stackMapTable)) {
+            return stackMapTable;
+        }
+        stackMapTable.setInfo(new byte[bytesToInt(stackMapTable.getAttribute_length())]);
+        fis.read(stackMapTable.getNumber_of_entries());
+        int numberOfEntries = bytesToInt(stackMapTable.getNumber_of_entries());
+        if (0<numberOfEntries) {
+            StackMapFrame stackMapFrame;
+            StackMapFrame[] stackMapFrames = new StackMapFrame[numberOfEntries];
+            stackMapTable.setEntries(stackMapFrames);
+            for(int i=0; i<numberOfEntries; i++) {
+                stackMapFrame = new StackMapFrame();
+                stackMapFrames[i] = stackMapFrame;
+                fis.read(stackMapFrame.getFrame_type());
+                switch (StackMapFrameEnum.getByFrameType(bytesToInt(stackMapFrame.getFrame_type()))) {
+                    case SAME:
+                        break;
+                    case SAME_LOCALS_1_STACK_ITEM:
+                        stackMapFrame.setStack(getVerificationTypeInfos(fis, 1));
+                        break;
+                    case SAME_LOCALS_1_STACK_ITEM_EXTENDS:
+                        stackMapFrame.setOffset_delta(new byte[2]);
+                        fis.read(stackMapFrame.getOffset_delta());
+                        stackMapFrame.setStack(getVerificationTypeInfos(fis, 1));
+                        break;
+                    case CHOP:
+                    case SAME_FRAME_EXTENDS:
+                        stackMapFrame.setOffset_delta(new byte[2]);
+                        fis.read(stackMapFrame.getOffset_delta());
+                        break;
+                    case APPEND:
+                        stackMapFrame.setOffset_delta(new byte[2]);
+                        fis.read(stackMapFrame.getOffset_delta());
+                        stackMapFrame.setLocals(getVerificationTypeInfos(fis, bytesToInt(stackMapFrame.getFrame_type()) - 251));
+                        break;
+                    case FULL_FRAME:
+                        stackMapFrame.setOffset_delta(new byte[2]);
+                        fis.read(stackMapFrame.getOffset_delta());
+                        stackMapFrame.setNumber_of_locals(new byte[2]);
+                        fis.read(stackMapFrame.getNumber_of_locals());
+                        int numberOfLocals = bytesToInt(stackMapFrame.getNumber_of_locals());
+                        if (0<numberOfLocals) {
+                            stackMapFrame.setLocals(getVerificationTypeInfos(fis, numberOfLocals));
+                        }
+                        stackMapFrame.setNumber_of_stack_items(new byte[2]);
+                        fis.read(stackMapFrame.getNumber_of_stack_items());
+                        int numberOfStackItems = bytesToInt(stackMapFrame.getNumber_of_stack_items());
+                        if (0<numberOfStackItems) {
+                            stackMapFrame.setStack(getVerificationTypeInfos(fis, numberOfStackItems));
+                        }
+                        break;
+                    default:
+                        throw new RuntimeException("unkown stack_map_frame type: " + bytesToInt(stackMapFrame.getFrame_type()));
+                }
+            }
+        }
+        return stackMapTable;
+    }
+
+    private static VerificationTypeInfo[] getVerificationTypeInfos(FileInputStream fis, int numOfVerificationTypeInfos) throws IOException {
+        VerificationTypeInfo[] verificationTypeInfos = new VerificationTypeInfo[numOfVerificationTypeInfos];
+        VerificationTypeInfo verificationTypeInfo;
+        for (int h=0; h<verificationTypeInfos.length; h++) {
+            verificationTypeInfo = new VerificationTypeInfo();
+            verificationTypeInfos[h] = verificationTypeInfo;
+            fis.read(verificationTypeInfo.getTag());
+            switch (VerificationTypeEnum.getByTag(bytesToInt(verificationTypeInfo.getTag()))) {
+                case ITEM_Top:
+                case ITEM_Integer:
+                case ITEM_Float:
+                case ITEM_Double:
+                case ITEM_Long:
+                case ITEM_Null:
+                case ITEM_UninitializedThis:
+                    break;
+                case ITEM_Object:
+                case ITEM_Uninitialized:
+                    verificationTypeInfo.setCpool_index_or_offset(new byte[2]);
+                    fis.read(verificationTypeInfo.getCpool_index_or_offset());
+                    break;
+                default:
+                    throw new RuntimeException("unkown varification_type_info tag: " + bytesToInt(verificationTypeInfo.getTag()));
+            }
+        }
+        return verificationTypeInfos;
     }
 
     private static void getRuntimeVisibleParameterAnnotations(FileInputStream fis, RuntimeVisibleParameterAnnotations attributeInfo, byte[] attribute_name_index) throws IOException {
@@ -266,13 +366,27 @@ public class Main {
         }
     }
 
+    private static void getRuntimeVisibleTypeAnnotations(FileInputStream fis, RuntimeVisibleTypeAnnotations attributeInfo, byte[] attribute_name_index) throws IOException {
+        RuntimeVisibleTypeAnnotations runtimeVisibleTypeAnnotations = attributeInfo;
+        runtimeVisibleTypeAnnotations.setAttribute_name_index(attribute_name_index);
+        fis.read(runtimeVisibleTypeAnnotations.getAttribute_length());
+        if (!attributeLengthCheck(runtimeVisibleTypeAnnotations)) {
+            return;
+        }
+        fis.read(runtimeVisibleTypeAnnotations.getNum_annotations());
+        int numAnnotations = bytesToInt(runtimeVisibleTypeAnnotations.getNum_annotations());
+        if (0<numAnnotations) {
+            runtimeVisibleTypeAnnotations.setAnnotations(getTypeAnnotationInfos(fis, numAnnotations));
+        }
+    }
+
     private static void getRuntimeVisibleAnnotations(FileInputStream fis, RuntimeVisibleAnnotations attributeInfo, byte[] attribute_name_index) throws IOException {
         RuntimeVisibleAnnotations runtimeVisibleAnnotations = attributeInfo;
         runtimeVisibleAnnotations.setAttribute_name_index(attribute_name_index);
         fis.read(runtimeVisibleAnnotations.getAttribute_length());
         if (!attributeLengthCheck(runtimeVisibleAnnotations)) {
             return;
-        };
+        }
         fis.read(runtimeVisibleAnnotations.getNum_annotations());
         int numAnnotations = bytesToInt(runtimeVisibleAnnotations.getNum_annotations());
         if (0<numAnnotations) {
@@ -315,6 +429,121 @@ public class Main {
         return parameterAnnotationInfo;
     }
 
+    private static TypeAnnotationInfo[] getTypeAnnotationInfos(FileInputStream fis, int numAnnotations) throws IOException {
+        TypeAnnotationInfo[] typeAnnotationInfos = new TypeAnnotationInfo[numAnnotations];
+        for(int h=0; h<numAnnotations; h++) {
+            typeAnnotationInfos[h] = getTypeAnnotationInfo(fis);
+        }
+        return typeAnnotationInfos;
+    }
+
+    private static TypeAnnotationInfo getTypeAnnotationInfo(FileInputStream fis) throws IOException {
+        TypeAnnotationInfo typeAnnotationInfo = new TypeAnnotationInfo();
+        fis.read(typeAnnotationInfo.getTarget_type());
+        switch (TargetTypeEnum.getByTargetType(bytesToInt(typeAnnotationInfo.getTarget_type()))) {
+            case type_parameter_target:
+                TypeParameterTarget typeParameterTarget = new TypeParameterTarget();
+                typeAnnotationInfo.setTarget_info(typeParameterTarget);
+                fis.read(typeParameterTarget.getType_parameter_index());
+                break;
+            case supertype_target:
+                SupertypeTarget supertypeTarget = new SupertypeTarget();
+                typeAnnotationInfo.setTarget_info(supertypeTarget);
+                fis.read(supertypeTarget.getSupertype_index());
+                break;
+            case type_parameter_bound_target:
+                TypeParameterBoundTarget typeParameterBoundTarget = new TypeParameterBoundTarget();
+                typeAnnotationInfo.setTarget_info(typeParameterBoundTarget);
+                fis.read(typeParameterBoundTarget.getType_parameter_index());
+                fis.read(typeParameterBoundTarget.getBound_index());
+                break;
+            case empty_target:
+                typeAnnotationInfo.setTarget_info(new TargetInfo());
+                break;
+            case formal_parameter_target:
+                FormalParameterTarget formalParameterTarget = new FormalParameterTarget();
+                typeAnnotationInfo.setTarget_info(formalParameterTarget);
+                fis.read(formalParameterTarget.getFormal_parameter_index());
+                break;
+            case throws_target:
+                ThrowsTarget throwsTarget = new ThrowsTarget();
+                typeAnnotationInfo.setTarget_info(throwsTarget);
+                fis.read(throwsTarget.getThrows_type_index());
+                break;
+            case localvar_target:
+                LocalvarTarget localvarTarget = new LocalvarTarget();
+                typeAnnotationInfo.setTarget_info(localvarTarget);
+                fis.read(localvarTarget.getTable_length());
+                int tableLength = bytesToInt(localvarTarget.getTable_length());
+                if (0<tableLength) {
+                    Table[] tables = new Table[tableLength];
+                    Table table;
+                    for(int i=0; i<tableLength; i++) {
+                        table = new Table();
+                        tables[i] = table;
+                        fis.read(table.getStart_pc());
+                        fis.read(table.getLength());
+                        fis.read(table.getIndex());
+                    }
+                    localvarTarget.setTables(tables);
+                }
+                break;
+            case catch_target:
+                CatchTarget catchTarget = new CatchTarget();
+                typeAnnotationInfo.setTarget_info(catchTarget);
+                fis.read(catchTarget.getException_table_index());
+                break;
+            case offset_target:
+                OffsetTarget offsetTarget = new OffsetTarget();
+                typeAnnotationInfo.setTarget_info(offsetTarget);
+                fis.read(offsetTarget.getOffset());
+                break;
+            case type_argument_target:
+                TypeArgumentTarget typeArgumentTarget = new TypeArgumentTarget();
+                typeAnnotationInfo.setTarget_info(typeArgumentTarget);
+                fis.read(typeArgumentTarget.getOffset());
+                fis.read(typeArgumentTarget.getType_argument_index());
+                break;
+            default:
+                throw new RuntimeException("unkown target_type: " + bytesToInt(typeAnnotationInfo.getTarget_type()));
+        }
+        TypePath typePath = new TypePath();
+        typeAnnotationInfo.setType_path(typePath);
+        fis.read(typePath.getPath_length());
+        int typePathLength = bytesToInt(typePath.getPath_length());
+        if (0<typePathLength) {
+            Path[] paths = new Path[typePathLength];
+            Path path;
+            for(int i=0; i<typePathLength; i++) {
+                path = new Path();
+                paths[i] = path;
+                fis.read(path.getType_path_kind());
+                fis.read(path.getType_argument_index());
+            }
+            typePath.setPaths(paths);
+        }
+        fis.read(typeAnnotationInfo.getType_index());
+        fis.read(typeAnnotationInfo.getNum_element_value_pairs());
+        int numElementValuePairs = bytesToInt(typeAnnotationInfo.getNum_element_value_pairs());
+        if (0<numElementValuePairs) {
+            typeAnnotationInfo.setElement_value_pairs(getElementValuePairs(fis, numElementValuePairs));
+        }
+        return typeAnnotationInfo;
+    }
+
+    private static ElementValuePair[] getElementValuePairs(FileInputStream fis, int numElementValuePairs) throws IOException {
+        ElementValuePair elementValuePair;
+        ElementValuePair[] elementValuePairs = new ElementValuePair[numElementValuePairs];
+        for(int j=0; j<numElementValuePairs; j++) {
+            elementValuePair = new ElementValuePair();
+            fis.read(elementValuePair.getElement_name_index());
+            elementValuePair.setElement_value(getElementValue(fis));
+            elementValuePairs[j] = elementValuePair;
+        }
+        return elementValuePairs;
+    }
+
+
     private static AnnotationInfo[] getAnnotationInfos(FileInputStream fis, int numAnnotations) throws IOException {
         AnnotationInfo[] annotationInfos = new AnnotationInfo[numAnnotations];
         for(int h=0; h<numAnnotations; h++) {
@@ -330,15 +559,7 @@ public class Main {
         fis.read(annotationInfo.getNum_element_value_pairs());
         int numElementValuePairs = bytesToInt(annotationInfo.getNum_element_value_pairs());
         if (0<numElementValuePairs) {
-            ElementValuePair elementValuePair;
-            ElementValuePair[] elementValuePairs = new ElementValuePair[numElementValuePairs];
-            annotationInfo.setElement_value_pairs(elementValuePairs);
-            for(int j=0; j<numElementValuePairs; j++) {
-                elementValuePair = new ElementValuePair();
-                fis.read(elementValuePair.getElement_name_index());
-                elementValuePair.setElement_value(getElementValue(fis));
-                elementValuePairs[j] = elementValuePair;
-            }
+            annotationInfo.setElement_value_pairs(getElementValuePairs(fis, numElementValuePairs));
         }
         return annotationInfo;
     }

@@ -1,6 +1,6 @@
 package com.zqh.analysis.enums;
 
-public enum ElementValueTagEnums {
+public enum ElementValueTagEnum {
 
     /*B,
     C,

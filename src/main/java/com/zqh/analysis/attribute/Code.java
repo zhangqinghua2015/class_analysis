@@ -50,7 +50,7 @@ public class Code extends AttributeInfo {
                 ", max_locals=" + bytesToInt(max_locals) + " // " + bytesToHexString(max_locals) +
                 ", code_length=" + bytesToInt(code_length) + " // " + bytesToHexString(code_length) +
                 ", code=" + codeSb.toString() +
-                ", excepton_table_length=" + bytesToInt(max_locals) + " // " + bytesToHexString(max_locals) +
+                ", excepton_table_length=" + bytesToInt(excepton_table_length) + " // " + bytesToHexString(excepton_table_length) +
                 ", exception_table=" + Arrays.toString(exception_table) +
                 ", attributes_count=" + bytesToInt(attributes_count) + " // " + bytesToHexString(attributes_count) +
                 ", attributes=" + attributeSb.toString() +

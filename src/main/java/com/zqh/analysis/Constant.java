@@ -1,8 +1,8 @@
 package com.zqh.analysis;
 
-import com.zqh.analysis.enums.ConstantEnums;
+import com.zqh.analysis.enums.ConstantEnum;
 
-import static com.zqh.analysis.enums.ConstantEnums.getConstantEnum;
+import static com.zqh.analysis.enums.ConstantEnum.getConstantEnum;
 import static com.zqh.analysis.utils.NumberUtil.bytesToHexString;
 import static com.zqh.analysis.utils.NumberUtil.bytesToInt;
 import static com.zqh.analysis.utils.NumberUtil.bytesToLong;
@@ -24,7 +24,7 @@ public class Constant {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("         Constant{ // ");
-        sb.append(ConstantEnums.getConstantEnum(bytesToInt(tag))).append(" \n")
+        sb.append(ConstantEnum.getConstantEnum(bytesToInt(tag))).append(" \n")
                 .append("             tag=").append(bytesToInt(tag)).append(" // ").append(bytesToHexString(tag));
         switch (getConstantEnum(bytesToInt(tag))) {
             case UTF_8_info:

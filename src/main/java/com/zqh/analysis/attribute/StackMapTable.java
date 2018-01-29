@@ -18,11 +18,11 @@ public class StackMapTable extends AttributeInfo {
 
     @Override
     public String toString() {
-        return "Exceptions{" +
+        return "StackMapTable{" +
                 " attribute_name_index=" + bytesToInt(attribute_name_index) + " // " + bytesToHexString(attribute_name_index) +
                 ", attribute_length=" + bytesToInt(attribute_length) + " // " + bytesToHexString(attribute_length) +
-                ", number_of_exceptions="  + bytesToInt(number_of_entries) + " // " + bytesToHexString(number_of_entries) +
-                ", exceptions_index_table=" + Arrays.toString(entries) +
+                ", number_of_entries="  + bytesToInt(number_of_entries) + " // " + bytesToHexString(number_of_entries) +
+                ", entries=" + Arrays.toString(entries) +
                 '}';
     }
 
