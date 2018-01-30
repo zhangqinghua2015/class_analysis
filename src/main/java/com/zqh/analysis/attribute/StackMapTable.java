@@ -6,7 +6,7 @@ import static com.zqh.analysis.utils.NumberUtil.bytesToHexString;
 import static com.zqh.analysis.utils.NumberUtil.bytesToInt;
 
 /**
- * @fileName: LineNumberTable
+ * @fileName: StackMapTable
  * @author: qhzhang
  * @date: 2018/01/26 18:14
  * @discription:

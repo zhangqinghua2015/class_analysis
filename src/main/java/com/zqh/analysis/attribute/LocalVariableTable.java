@@ -18,7 +18,7 @@ public class LocalVariableTable extends AttributeInfo {
 
     @Override
     public String toString() {
-        return "LineNumberTable{" +
+        return "LocalVariableTable{" +
                 " attribute_name_index=" + bytesToInt(attribute_name_index) + " // " + bytesToHexString(attribute_name_index) +
                 ", attribute_length=" + bytesToInt(attribute_length) + " // " + bytesToHexString(attribute_length) +
                 ", local_variable_table_length="  + bytesToInt(local_variable_table_length) + " // " + bytesToHexString(local_variable_table_length) +
