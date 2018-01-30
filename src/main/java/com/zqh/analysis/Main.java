@@ -671,6 +671,7 @@ public class Main {
         if (0 < numBootstrapMethods) {
             BootstrapMethod bootstrapMethod;
             BootstrapMethod[] bootstrapMethodArray = new BootstrapMethod[numBootstrapMethods];
+            bootstrapMethods.setBootstrap_methods(bootstrapMethodArray);
             for(int i=0; i<numBootstrapMethods; i++) {
                 bootstrapMethod = new BootstrapMethod();
                 bootstrapMethodArray[i] = bootstrapMethod;
